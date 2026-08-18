@@ -4,19 +4,19 @@ Tools and extensions for built-in .NET types, with no Unity engine dependencies.
 
 ## Features
 
-- **ManeSingleton** — thread-safe singleton with explicit `SetInstance` / `ClearInstance`
-- **GlobalEventManager** — in-process event bus keyed by concrete event type
-- **MinMaxInt / MinMaxFloat / MinMaxDouble** — unordered numeric intervals, with clamp and contains
-- **IRandom / ManeRandom** — seeded random source, plus dice and coin helpers
-- **AsyncTools** — poll a condition, wrap callbacks as tasks, observe completion with `OnComplete`
-- **HistoryCache** — ring buffer of the last N float or double samples
-- **DateTimeTools** — `Min` / `Max` for two `DateTime` values
-- **Collection extensions** — `ForEach`, `Shuffle`, `InitWith`, `FillWith`, random sampling, `IsNullOrEmpty`
-- **Numeric extensions** — clamp, remap, saturating `int` arithmetic
-- **TimeSpan extensions** — clock strings (`HH:MM:SS`, `HH:MM`, `MM:SS`) using total hours or minutes
-- **String extensions** — culture-invariant number parsers, `ToUpperFirst`, Slavic counted-noun forms
-- **PathTools** — strip the last path component without rewriting `/` vs `\`
-- **EnumTools** — list values, detect `[Obsolete]`, parse integer-backed members
+- **ManeSingleton** - thread-safe singleton with explicit `SetInstance` / `ClearInstance`
+- **GlobalEventManager** - in-process event bus keyed by concrete event type
+- **MinMaxInt / MinMaxFloat / MinMaxDouble** - unordered numeric intervals, with clamp and contains
+- **IRandom / ManeRandom** - seeded random source, plus dice and coin helpers
+- **AsyncTools** - poll a condition, wrap callbacks as tasks, observe completion with `OnComplete`
+- **HistoryCache** - ring buffer of the last N float or double samples
+- **DateTimeTools** - `Min` / `Max` for two `DateTime` values
+- **Collection extensions** - `ForEach`, `Shuffle`, `InitWith`, `FillWith`, random sampling, `IsNullOrEmpty`
+- **Numeric extensions** - clamp, remap, saturating `int` arithmetic
+- **TimeSpan extensions** - clock strings (`HH:MM:SS`, `HH:MM`, `MM:SS`) using total hours or minutes
+- **String extensions** - culture-invariant number parsers, `ToUpperFirst`, Slavic counted-noun forms
+- **PathTools** - strip the last path component without rewriting `/` vs `\`
+- **EnumTools** - list values, detect `[Obsolete]`, parse integer-backed members
 
 Almost all public API methods are covered with NUnit tests.
 
@@ -36,6 +36,12 @@ On Windows, I recommend `Git Bash` (`MINGW`) for CLI work: it is a Unix-like she
    - Open a terminal in your Unity project folder: `cd /path/to/your/project`.
    - Run: `openupm add com.manefunction.tools-dotnet`.
    - Switch back to Unity and wait for the package to finish importing.
+
+## Why Preview?
+
+Despite the fact that the code itself is not new, splitting one package into two - plus a pile of refactoring - is a great way to invent fresh bugs.
+
+Overall it should still be safe for commercial work (the original ManeTools already ships in a few dozen live projects), but let's give this split a little time to surface whatever I missed. Use at your own risk, I suppose.
 
 ## Repository info
 
