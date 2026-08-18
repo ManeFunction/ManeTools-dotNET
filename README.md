@@ -18,6 +18,8 @@ Tools and extensions for built-in .NET types, with no Unity engine dependencies.
 - **PathTools** — strip the last path component without rewriting `/` vs `\`
 - **EnumTools** — list values, detect `[Obsolete]`, parse integer-backed members
 
+Almost all public API methods are covered with NUnit tests.
+
 ## Installation
 
 I recommend installing this package with the `OpenUPM` CLI. It keeps dependencies and updates easy to manage. If you cannot use `OpenUPM`, download the package and place it anywhere in your Unity project.
