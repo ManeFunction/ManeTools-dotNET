@@ -1,6 +1,6 @@
 {
   "name": "com.manefunction.tools-dotnet",
-  "version": "2.0.0-preview.1",
+  "version": "2.0.0-preview.2",
   "displayName": "Mane Tools for .NET",
   "description": "Tools and extensions for built-in .NET types, with no Unity engine dependencies. Useful for domain-driven design and for separating core logic code from Unity.",
   "unity": "6000.0",

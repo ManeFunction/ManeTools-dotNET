@@ -65,7 +65,7 @@ namespace Mane.DotNet
         /// A zero-width source range returns <paramref name="destFrom"/>.
         /// </summary>
         public static float Remap(this float value, float sourceFrom, float sourceTo, float destFrom, float destTo) =>
-            Math.Abs(sourceTo - sourceFrom) < Mane.FloatTolerance
+            Math.Abs(sourceTo - sourceFrom) < ManeConst.FloatTolerance
                 ? destFrom
                 : (value - sourceFrom) / (sourceTo - sourceFrom) * (destTo - destFrom) + destFrom;
         
@@ -74,7 +74,7 @@ namespace Mane.DotNet
         /// A zero-width source range returns <paramref name="destFrom"/>.
         /// </summary>
         public static double Remap(this double value, double sourceFrom, double sourceTo, double destFrom, double destTo) =>
-            Math.Abs(sourceTo - sourceFrom) < Mane.DoubleTolerance
+            Math.Abs(sourceTo - sourceFrom) < ManeConst.DoubleTolerance
                 ? destFrom
                 : (value - sourceFrom) / (sourceTo - sourceFrom) * (destTo - destFrom) + destFrom;
 

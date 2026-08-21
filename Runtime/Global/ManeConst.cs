@@ -3,7 +3,7 @@ namespace Mane.DotNet
     /// <summary>
     /// Shared numeric constants used by this package.
     /// </summary>
-    public static class Mane
+    public static class ManeConst
     {
         /// <summary>
         /// Default comparison tolerance for <see cref="float"/> values.

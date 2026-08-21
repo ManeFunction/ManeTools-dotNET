@@ -5,7 +5,7 @@ namespace Mane.DotNet
     /// <summary>
     /// Inclusive double interval. <see cref="A"/> and <see cref="B"/> are unordered endpoints;
     /// <see cref="Min"/> and <see cref="Max"/> always return the numeric bounds.
-    /// Equality uses <see cref="Mane.DoubleTolerance"/>.
+    /// Equality uses <see cref="ManeConst.DoubleTolerance"/>.
     /// </summary>
     [Serializable]
     public struct MinMaxDouble : IEquatable<MinMaxDouble>
@@ -68,12 +68,12 @@ namespace Mane.DotNet
             new(a.Min - b.Max, a.Max - b.Min);
 
         /// <summary>
-        /// Returns true if the normalized bounds are equal within <see cref="Mane.DoubleTolerance"/>.
+        /// Returns true if the normalized bounds are equal within <see cref="ManeConst.DoubleTolerance"/>.
         /// </summary>
         public static bool operator ==(MinMaxDouble a, MinMaxDouble b) => a.Equals(b);
 
         /// <summary>
-        /// Returns true if the normalized bounds differ by more than <see cref="Mane.DoubleTolerance"/>.
+        /// Returns true if the normalized bounds differ by more than <see cref="ManeConst.DoubleTolerance"/>.
         /// </summary>
         public static bool operator !=(MinMaxDouble a, MinMaxDouble b) => !a.Equals(b);
 
@@ -92,17 +92,17 @@ namespace Mane.DotNet
         public readonly double Clamp(double value) => Math.Clamp(value, Min, Max);
 
         /// <summary>
-        /// Compares normalized bounds within <see cref="Mane.DoubleTolerance"/>, so (1, 5) equals (5, 1).
+        /// Compares normalized bounds within <see cref="ManeConst.DoubleTolerance"/>, so (1, 5) equals (5, 1).
         /// </summary>
         public readonly bool Equals(MinMaxDouble other) =>
-            Math.Abs(Min - other.Min) < Mane.DoubleTolerance &&
-            Math.Abs(Max - other.Max) < Mane.DoubleTolerance;
+            Math.Abs(Min - other.Min) < ManeConst.DoubleTolerance &&
+            Math.Abs(Max - other.Max) < ManeConst.DoubleTolerance;
 
         /// <inheritdoc />
         public readonly override bool Equals(object obj) => obj is MinMaxDouble other && Equals(other);
 
         /// <summary>
-        /// Hashes normalized bounds snapped to <see cref="Mane.DoubleTolerance"/>,
+        /// Hashes normalized bounds snapped to <see cref="ManeConst.DoubleTolerance"/>,
         /// so values that compare equal share a hash except on bucket edges.
         /// </summary>
         public readonly override int GetHashCode() =>
@@ -117,7 +117,7 @@ namespace Mane.DotNet
             if (double.IsNegativeInfinity(value))
                 return long.MinValue;
 
-            double scaled = value / Mane.DoubleTolerance;
+            double scaled = value / ManeConst.DoubleTolerance;
             if (double.IsPositiveInfinity(scaled) || scaled >= long.MaxValue)
                 return long.MaxValue;
             if (double.IsNegativeInfinity(scaled) || scaled <= long.MinValue)
