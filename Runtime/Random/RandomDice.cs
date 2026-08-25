@@ -41,16 +41,4 @@ namespace Mane.DotNet
         /// <summary>Rolls a 20-sided die.</summary>
         public static int Roll20(IRandom random) => Roll(20, random);
     }
-
-    /// <summary>
-    /// Flipping a coin.
-    /// Absolutely unnecessary, but makes your coding experience more fun.
-    /// </summary>
-    public static class RandomCoin
-    {
-        /// <summary>
-        /// Returns true or false with equal probability.
-        /// </summary>
-        public static bool Flip(IRandom random) => RandomDice.Roll(2, random) == 1;
-    }
 }
