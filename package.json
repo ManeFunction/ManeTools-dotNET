@@ -2,7 +2,7 @@
   "name": "com.manefunction.tools-dotnet",
   "version": "2.0.0-preview.2",
   "displayName": "Mane Tools for .NET",
-  "description": "Tools and extensions for built-in .NET types, with no Unity engine dependencies. Useful for domain-driven design and for separating core logic code from Unity.",
+  "description": "Tools and extensions for built-in .NET types, with no Unity engine dependencies. Useful for domain-driven design and for separating core logic code from Unity.\n\nEverything can be found under 'Mane.DotNet' namespace.",
   "unity": "6000.0",
   "unityRelease": "81f1",
   "license": "MIT",
@@ -23,7 +23,7 @@
   ],
   "author": {
     "name": "Ilia Petrov-Komotskii (Mane Function)",
-    "email": "ilia@inkedkettle.art",
+    "email": "ilia@inkedkettle.games",
     "url": "https://github.com/ManeFunction"
   },
   "publishConfig": {
