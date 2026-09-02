@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
 ## [2.0.0-preview.2] - 2026-08-18
 ### Changed
 - Renamed constants library from Mane. to ManeConst. to eliminate conflicts with the namespace.
