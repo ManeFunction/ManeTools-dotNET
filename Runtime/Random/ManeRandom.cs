@@ -6,9 +6,11 @@ namespace Mane.DotNet
     /// <summary>
     /// <see cref="IRandom"/> implementation backed by <see cref="Random"/>.
     /// The parameterless constructor seeds from a cryptographically strong source.
+    /// Overlapping <see cref="Next"/>, <see cref="Range01"/>, and <see cref="Range01Double"/> calls are serialized.
     /// </summary>
     public class ManeRandom : IRandom
     {
+        private readonly object _sync = new();
         private readonly Random _random;
         private readonly int _seed;
 
@@ -37,12 +39,24 @@ namespace Mane.DotNet
         }
 
         /// <inheritdoc />
-        public int Next(int min, int max) => _random.Next(min, max);
+        public int Next(int min, int max)
+        {
+            lock (_sync)
+                return _random.Next(min, max);
+        }
 
         /// <inheritdoc />
-        public double Range01Double() => _random.NextDouble();
+        public double Range01Double()
+        {
+            lock (_sync)
+                return _random.NextDouble();
+        }
 
         /// <inheritdoc />
-        public float Range01() => (float)_random.NextDouble();
+        public float Range01()
+        {
+            lock (_sync)
+                return (float)_random.NextDouble();
+        }
     }
 }

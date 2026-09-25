@@ -7,7 +7,7 @@ Tools and extensions for built-in .NET types, with no Unity engine dependencies.
 - **ManeSingleton** - thread-safe singleton with explicit `SetInstance` / `ClearInstance`
 - **GlobalEventManager** - in-process event bus keyed by concrete event type
 - **MinMaxInt / MinMaxFloat / MinMaxDouble** - unordered numeric intervals, with clamp and contains
-- **IRandom / ManeRandom** - seeded random source, plus dice and coin helpers
+- **IRandom / ManeRandom / GlobalRandom** - seeded thread-safe random source, a shared `IRandom` slot, plus dice and coin helpers
 - **AsyncTools** - poll a condition, wrap callbacks as tasks, observe completion with `OnComplete`
 - **HistoryCache** - ring buffer of the last N float or double samples
 - **DateTimeTools** - `Min` / `Max` for two `DateTime` values

@@ -6,7 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- `GlobalRandom`, a shared `IRandom` slot with the same `Instance` / `SetInstance` / `ClearInstance` lifecycle as `ManeSingleton`. The first access stores a `ManeRandom`. Calls through `Instance` are serialized.
+
 ### Changed
+- `ManeRandom` serializes overlapping `Next`, `Range01`, and `Range01Double` calls on the same instance to fix the `System.Random` thread-safety issue.
 - `GlobalEventManager.RaiseEvent` now also invokes listeners registered for base event types. Matching listeners run in subscription order.
 - Renamed constants library from Mane. to ManeConst. to eliminate conflicts with the namespace.
 
