@@ -12,7 +12,7 @@ namespace Mane.DotNet
         public FloatHistoryCache(int length) : base(length) { }
 
         /// <inheritdoc />
-        public override float GetAverage()
+        protected override float ComputeAverage()
         {
             if (Count == 0)
                 return 0f;

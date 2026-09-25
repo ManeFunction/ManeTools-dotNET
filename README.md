@@ -9,7 +9,7 @@ Tools and extensions for built-in .NET types, with no Unity engine dependencies.
 - **MinMaxInt / MinMaxFloat / MinMaxDouble** - unordered numeric intervals, with clamp and contains
 - **IRandom / ManeRandom / GlobalRandom** - seeded thread-safe random source, a shared `IRandom` slot, plus dice and coin helpers
 - **AsyncTools** - poll a condition, wrap callbacks as tasks, observe completion with `OnComplete`
-- **HistoryCache** - ring buffer of the last N float or double samples
+- **HistoryCache** - ring buffer of the last N int, float, or double samples
 - **DateTimeTools** - `Min` / `Max` for two `DateTime` values
 - **Collection extensions** - `ForEach`, `Shuffle`, `InitWith`, `FillWith`, random sampling, `IsNullOrEmpty`
 - **Numeric extensions** - clamp, remap, saturating `int` arithmetic

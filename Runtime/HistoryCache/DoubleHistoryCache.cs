@@ -12,7 +12,7 @@ namespace Mane.DotNet
         public DoubleHistoryCache(int length) : base(length) { }
 
         /// <inheritdoc />
-        public override double GetAverage()
+        protected override double ComputeAverage()
         {
             if (Count == 0)
                 return 0d;
