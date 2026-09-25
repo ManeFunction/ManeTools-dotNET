@@ -1,6 +1,6 @@
 # Mane Tools for .NET
 
-Tools and extensions for built-in .NET types, with no Unity engine dependencies. Useful for domain-driven design and for separating core logic code from Unity.
+Tools and extensions for built-in .NET types, with no Unity engine dependencies. Useful for domain-driven design and for separating core logic code from Unity-dependent.
 
 ## Features
 
@@ -17,8 +17,9 @@ Tools and extensions for built-in .NET types, with no Unity engine dependencies.
 - **String extensions** - culture-invariant number parsers, `ToUpperFirst`, Slavic counted-noun forms
 - **PathTools** - strip the last path component without rewriting `/` vs `\`
 - **EnumTools** - list values, detect `[Obsolete]`, parse integer-backed members
+- Almost all public API methods are covered with `NUnit` tests.
 
-Almost all public API methods are covered with NUnit tests.
+For detailed info and usage examples of everything in this package, welcome to [projects Wiki](https://github.com/ManeFunction/ManeTools-dotNET/wiki)!
 
 ## Installation
 

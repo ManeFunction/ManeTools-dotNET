@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Mane.DotNet
 {
     /// <summary>
-    /// In-process event bus keyed by the concrete event type.
-    /// Raising <c>TestEvent</c> does not invoke listeners registered for a base type.
+    /// In-process event bus keyed by event type.
+    /// Raising an event also invokes listeners registered for its base types.
+    /// Matching listeners run in subscription order.
     /// </summary>
     public class GlobalEventManager : ManeSingleton<GlobalEventManager>
     {
-        private readonly Dictionary<Type, Delegate> _eventListeners = new();
+        private readonly List<Listener> _listeners = new();
         private readonly object _sync = new();
 
         private GlobalEventManager() { }
@@ -25,17 +25,13 @@ namespace Mane.DotNet
             if (listener == null)
                 throw new ArgumentNullException(nameof(listener));
 
+            Type eventType = typeof(T);
             lock (_sync)
             {
-                if (_eventListeners.TryGetValue(typeof(T), out var existingDelegate))
-                {
-                    if (existingDelegate.GetInvocationList().Contains(listener))
-                        return;
+                if (Contains(eventType, listener))
+                    return;
 
-                    _eventListeners[typeof(T)] = Delegate.Combine(existingDelegate, listener);
-                }
-                else
-                    _eventListeners[typeof(T)] = listener;
+                _listeners.Add(new Listener(eventType, listener, e => listener((T)e)));
             }
         }
 
@@ -49,21 +45,24 @@ namespace Mane.DotNet
             if (listener == null)
                 return;
 
+            Type eventType = typeof(T);
             lock (_sync)
             {
-                if (!_eventListeners.TryGetValue(typeof(T), out var existingDelegate))
-                    return;
+                for (int i = 0; i < _listeners.Count; i++)
+                {
+                    if (!_listeners[i].Matches(eventType, listener))
+                        continue;
 
-                var newDelegate = Delegate.Remove(existingDelegate, listener);
-                if (newDelegate == null)
-                    _eventListeners.Remove(typeof(T));
-                else
-                    _eventListeners[typeof(T)] = newDelegate;
+                    _listeners.RemoveAt(i);
+                    return;
+                }
             }
         }
 
         /// <summary>
-        /// Raise an event
+        /// Raise an event. Every listener whose type is <paramref name="e"/> or a base of it runs,
+        /// in subscription order. A derived instance still notifies its own listeners when the
+        /// call is typed as a base.
         /// </summary>
         /// <param name="e">The event to raise</param>
         /// <typeparam name="T">Type of event, derived from <see cref="BaseEvent"/></typeparam>
@@ -72,16 +71,50 @@ namespace Mane.DotNet
             if (e == null)
                 throw new ArgumentNullException(nameof(e));
 
-            EventDelegate<T> callback;
+            Type runtimeType = e.GetType();
+            List<Action<BaseEvent>> callbacks = new();
             lock (_sync)
             {
-                if (!_eventListeners.TryGetValue(typeof(T), out var delegateObj))
-                    return;
-
-                callback = delegateObj as EventDelegate<T>;
+                foreach (var listener in _listeners)
+                {
+                    if (listener.Accepts(runtimeType))
+                        callbacks.Add(listener.Invoke);
+                }
             }
 
-            callback?.Invoke(e);
+            foreach (var callback in callbacks)
+                callback(e);
+        }
+
+        private bool Contains(Type eventType, Delegate listener)
+        {
+            foreach (var eventTypeListener in _listeners)
+            {
+                if (eventTypeListener.Matches(eventType, listener))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private sealed class Listener
+        {
+            private readonly Type _eventType;
+            private readonly Delegate _original;
+
+            public Action<BaseEvent> Invoke { get; }
+
+            public Listener(Type eventType, Delegate original, Action<BaseEvent> invoke)
+            {
+                _eventType = eventType;
+                _original = original;
+                Invoke = invoke;
+            }
+
+            public bool Accepts(Type runtimeType) => _eventType.IsAssignableFrom(runtimeType);
+
+            public bool Matches(Type eventType, Delegate listener) =>
+                _eventType == eventType && _original.Equals(listener);
         }
     }
     

@@ -6,9 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
-
-## [2.0.0-preview.2] - 2026-08-18
 ### Changed
+- `GlobalEventManager.RaiseEvent` now also invokes listeners registered for base event types. Matching listeners run in subscription order.
 - Renamed constants library from Mane. to ManeConst. to eliminate conflicts with the namespace.
 
 ## [2.0.0-preview.1] - 2026-08-18

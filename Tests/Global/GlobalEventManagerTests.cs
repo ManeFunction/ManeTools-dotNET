@@ -29,14 +29,61 @@ namespace Mane.DotNet.Tests
         }
 
         [Test]
-        public void RaiseEvent_DoesNotInvokeBaseTypeListeners()
+        public void RaiseEvent_InvokesBaseTypeListeners()
         {
             int baseCalls = 0;
+            int middleCalls = 0;
             int derivedCalls = 0;
             GlobalEventManager.Instance.AddListener<BaseEvent>(_ => baseCalls++);
+            GlobalEventManager.Instance.AddListener<MiddleEvent>(_ => middleCalls++);
             GlobalEventManager.Instance.AddListener<TestEvent>(_ => derivedCalls++);
+
             GlobalEventManager.Instance.RaiseEvent(new TestEvent());
-            Assert.AreEqual(0, baseCalls);
+
+            Assert.AreEqual(1, derivedCalls);
+            Assert.AreEqual(1, middleCalls);
+            Assert.AreEqual(1, baseCalls);
+        }
+
+        [Test]
+        public void RaiseEvent_BaseInstance_DoesNotInvokeDerivedListeners()
+        {
+            int baseCalls = 0;
+            int middleCalls = 0;
+            int derivedCalls = 0;
+            GlobalEventManager.Instance.AddListener<BaseEvent>(_ => baseCalls++);
+            GlobalEventManager.Instance.AddListener<MiddleEvent>(_ => middleCalls++);
+            GlobalEventManager.Instance.AddListener<TestEvent>(_ => derivedCalls++);
+
+            GlobalEventManager.Instance.RaiseEvent(new MiddleEvent());
+
+            Assert.AreEqual(0, derivedCalls);
+            Assert.AreEqual(1, middleCalls);
+            Assert.AreEqual(1, baseCalls);
+        }
+
+        [Test]
+        public void RaiseEvent_InvokesInSubscriptionOrder()
+        {
+            string order = string.Empty;
+            GlobalEventManager.Instance.AddListener<BaseEvent>(_ => order += "b");
+            GlobalEventManager.Instance.AddListener<TestEvent>(_ => order += "t");
+            GlobalEventManager.Instance.AddListener<MiddleEvent>(_ => order += "m");
+
+            GlobalEventManager.Instance.RaiseEvent(new TestEvent());
+
+            Assert.AreEqual("btm", order);
+        }
+
+        [Test]
+        public void RaiseEvent_TypedAsBase_UsesRuntimeType()
+        {
+            int derivedCalls = 0;
+            GlobalEventManager.Instance.AddListener<TestEvent>(_ => derivedCalls++);
+
+            BaseEvent raised = new TestEvent();
+            GlobalEventManager.Instance.RaiseEvent(raised);
+
             Assert.AreEqual(1, derivedCalls);
         }
 
@@ -89,7 +136,9 @@ namespace Mane.DotNet.Tests
             Assert.Throws<ArgumentNullException>(() => GlobalEventManager.Instance.RaiseEvent<TestEvent>(null));
         }
 
-        private sealed class TestEvent : BaseEvent { }
+        private class MiddleEvent : BaseEvent { }
+
+        private sealed class TestEvent : MiddleEvent { }
 
         private sealed class UntypedSenderEvent : SenderEvent
         {
