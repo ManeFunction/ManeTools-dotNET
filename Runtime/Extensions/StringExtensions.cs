@@ -206,5 +206,22 @@ namespace Mane.DotNet
                 return many;
             return more;
         }
+
+        /// <summary>
+        /// English-style plural form: <paramref name="count"/> greater than 1 uses <paramref name="many"/>,
+        /// otherwise <paramref name="one"/>.
+        /// </summary>
+        /// <param name="count">Count used to pick the form.</param>
+        /// <param name="one">Form for 1, 0, and negative counts.</param>
+        /// <param name="many">Form for counts greater than 1.</param>
+        public static string GetCountedString(this int count, string one, string many)
+        {
+            if (one == null)
+                throw new ArgumentNullException(nameof(one));
+            if (many == null)
+                throw new ArgumentNullException(nameof(many));
+
+            return count > 1 ? many : one;
+        }
     }
 }

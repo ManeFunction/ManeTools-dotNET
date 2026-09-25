@@ -306,7 +306,21 @@ namespace Mane.DotNet.Tests
             Assert.Throws<ArgumentNullException>(() => 1.GetCountedString(null, "many", "more"));
             Assert.Throws<ArgumentNullException>(() => 1.GetCountedString("one", null, "more"));
             Assert.Throws<ArgumentNullException>(() => 1.GetCountedString("one", "many", null));
+            Assert.Throws<ArgumentNullException>(() => 1.GetCountedString(null, "apples"));
+            Assert.Throws<ArgumentNullException>(() => 1.GetCountedString("apple", null));
         }
+
+        [TestCase(0)]
+        [TestCase(1)]
+        [TestCase(-1)]
+        public void GetCountedString_English_One(int count) =>
+            Assert.AreEqual("apple", count.GetCountedString("apple", "apples"));
+
+        [TestCase(2)]
+        [TestCase(5)]
+        [TestCase(100)]
+        public void GetCountedString_English_Many(int count) =>
+            Assert.AreEqual("apples", count.GetCountedString("apple", "apples"));
 
         #endregion
     }

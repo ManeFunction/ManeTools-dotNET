@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 ### Added
 - `IntHistoryCache`, a ring buffer of recent `int` values. `GetAverage` rounds the mean to the nearest `int`, with midpoints away from zero.
+- `GetCountedString(one, many)`, an English plural that uses `many` when the count is greater than 1.
 - `GlobalRandom`, a shared `IRandom` slot with the same `Instance` / `SetInstance` / `ClearInstance` lifecycle as `ManeSingleton`. The first access stores a `ManeRandom`. Calls through `Instance` are serialized.
 
 ### Changed

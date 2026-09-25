@@ -14,7 +14,7 @@ Tools and extensions for built-in .NET types, with no Unity engine dependencies.
 - **Collection extensions** - `ForEach`, `Shuffle`, `InitWith`, `FillWith`, random sampling, `IsNullOrEmpty`
 - **Numeric extensions** - clamp, remap, saturating `int` arithmetic
 - **TimeSpan extensions** - clock strings (`HH:MM:SS`, `HH:MM`, `MM:SS`) using total hours or minutes
-- **String extensions** - culture-invariant number parsers, `ToUpperFirst`, Slavic counted-noun forms
+- **String extensions** - culture-invariant number parsers, `ToUpperFirst`, Slavic and English counted-noun forms
 - **PathTools** - strip the last path component without rewriting `/` vs `\`
 - **EnumTools** - list values, detect `[Obsolete]`, parse integer-backed members
 - Almost all public API methods are covered with `NUnit` tests.
