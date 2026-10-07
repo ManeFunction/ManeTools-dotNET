@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `IntHistoryCache`, a ring buffer of recent `int` values. `GetAverage` rounds the mean to the nearest `int`, with midpoints away from zero.
 - `GetCountedString(one, many)`, an English plural that uses `many` when the count is greater than 1.
 - `GlobalRandom`, a shared `IRandom` slot with the same `Instance` / `SetInstance` / `ClearInstance` lifecycle as `ManeSingleton`. The first access stores a `ManeRandom`. Calls through `Instance` are serialized.
+- `RandomOrDefault(predicate, random)` returns a uniformly chosen match, or default when nothing matches. Arrays and `List<T>` are scanned directly; other lists use the indexer. Other sequences use one-pass reservoir sampling. The predicate runs once per element.
 
 ### Changed
 - `ManeRandom` serializes overlapping `Next`, `Range01`, and `Range01Double` calls on the same instance to fix the `System.Random` thread-safety issue.

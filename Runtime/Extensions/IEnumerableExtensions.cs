@@ -134,6 +134,98 @@ namespace Mane.DotNet
         }
 
         /// <summary>
+        /// Returns a random element that matches <paramref name="predicate"/>,
+        /// or default when nothing matches.
+        /// Arrays and <see cref="List{T}"/> are scanned with their own enumerator.
+        /// Other lists use the indexer. Everything else is one-pass reservoir sampling of the matches.
+        /// The predicate runs once per element.
+        /// </summary>
+        public static T RandomOrDefault<T>(this IEnumerable<T> collection, Func<T, bool> predicate, IRandom random)
+        {
+            if (collection == null)
+                throw new ArgumentNullException(nameof(collection));
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+            if (random == null)
+                throw new ArgumentNullException(nameof(random));
+
+            T selected = default;
+            int matches = 0;
+
+            // foreach on the interface would box the array and List enumerators.
+            if (collection is T[] array)
+            {
+                foreach (T item in array)
+                    if (predicate(item))
+                        ReservoirPick(item, ref selected, ref matches, random);
+
+                return selected;
+            }
+
+            if (collection is List<T> list)
+            {
+                foreach (T item in list)
+                    if (predicate(item))
+                        ReservoirPick(item, ref selected, ref matches, random);
+
+                return selected;
+            }
+
+            if (collection is IReadOnlyList<T> readOnlyList)
+            {
+                int count = readOnlyList.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    T item = readOnlyList[i];
+                    if (predicate(item))
+                        ReservoirPick(item, ref selected, ref matches, random);
+                }
+
+                return selected;
+            }
+
+            if (collection is IList<T> iList)
+            {
+                int count = iList.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    T item = iList[i];
+                    if (predicate(item))
+                        ReservoirPick(item, ref selected, ref matches, random);
+                }
+
+                return selected;
+            }
+
+            // Count is not a match index. It only lets an empty collection return before enumeration.
+            if (collection is IReadOnlyCollection<T> readOnlyCollection)
+            {
+                if (readOnlyCollection.Count == 0)
+                    return default;
+            }
+            else if (collection is ICollection<T> countable)
+            {
+                if (countable.Count == 0)
+                    return default;
+            }
+
+            foreach (T item in collection)
+                if (predicate(item))
+                    ReservoirPick(item, ref selected, ref matches, random);
+
+            return selected;
+        }
+
+        // The first match is always kept, so it does not draw.
+        // Each later match replaces the pick with probability 1/matches.
+        private static void ReservoirPick<T>(T candidate, ref T selected, ref int matches, IRandom random)
+        {
+            matches++;
+            if (matches == 1 || random.Next(0, matches) == 0)
+                selected = candidate;
+        }
+
+        /// <summary>
         /// Concatenate the list with itself <paramref name="times"/> times
         /// </summary>
         public static IEnumerable<T> SelfConcat<T>(this IEnumerable<T> list, int times)

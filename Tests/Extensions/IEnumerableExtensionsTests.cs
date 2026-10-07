@@ -126,6 +126,89 @@ namespace Mane.DotNet.Tests
             Assert.Throws<ArgumentNullException>(() => new[] { 1 }.RandomOrDefault(null));
         }
 
+        [Test]
+        public void RandomOrDefault_Predicate_ArrayAndList_Reservoir()
+        {
+            Assert.AreEqual(3, new[] { 1, 2, 3 }.RandomOrDefault(v => v > 1, new ScriptedRandom(0)));
+            Assert.AreEqual(1, new[] { 1, 2, 3 }.RandomOrDefault(_ => true, new ScriptedRandom(1, 1)));
+
+            List<int> list = new() { 1, 2, 3 };
+            Assert.AreEqual(2, list.RandomOrDefault(v => v > 1, new ScriptedRandom(1)));
+            Assert.AreEqual(3, list.RandomOrDefault(_ => true, new ScriptedRandom(1, 0)));
+        }
+
+        [Test]
+        public void RandomOrDefault_Predicate_OtherLists_UseIndexer()
+        {
+            IndexOnlyReadOnlyList readOnlyList = new(1, 2, 3);
+            Assert.AreEqual(2, readOnlyList.RandomOrDefault(v => v > 1, new ScriptedRandom(1)));
+            Assert.AreEqual(0, readOnlyList.Enumerations);
+
+            IndexOnlyList list = new(1, 2, 3);
+            Assert.AreEqual(3, list.RandomOrDefault(v => v > 1, new ScriptedRandom(0)));
+            Assert.AreEqual(0, list.Enumerations);
+        }
+
+        [Test]
+        public void RandomOrDefault_Predicate_Iterator_Reservoir()
+        {
+            IEnumerable<int> Iter()
+            {
+                yield return 1;
+                yield return 2;
+                yield return 3;
+            }
+
+            Assert.AreEqual(3, Iter().RandomOrDefault(v => v > 1, new ScriptedRandom(0)));
+            Assert.AreEqual(2, Iter().RandomOrDefault(v => v == 2, new NoDrawRandom()));
+        }
+
+        [Test]
+        public void RandomOrDefault_Predicate_EmptyCountable_DoesNotEnumerate()
+        {
+            EmptyReadOnlyCollection readOnly = new();
+            Assert.AreEqual(0, readOnly.RandomOrDefault(_ => true, new NoDrawRandom()));
+            Assert.AreEqual(0, readOnly.Enumerations);
+
+            EmptyBag bag = new();
+            Assert.AreEqual(0, bag.RandomOrDefault(_ => true, new NoDrawRandom()));
+            Assert.AreEqual(0, bag.Enumerations);
+        }
+
+        [Test]
+        public void RandomOrDefault_Predicate_NoChoice_DoesNotDraw()
+        {
+            Assert.AreEqual(0, Array.Empty<int>().RandomOrDefault(_ => true, new NoDrawRandom()));
+            Assert.AreEqual(0, new List<int> { 1, 2 }.RandomOrDefault(v => v < 0, new NoDrawRandom()));
+            Assert.AreEqual(0, new HashSet<int>().RandomOrDefault(_ => true, new NoDrawRandom()));
+            Assert.AreEqual(2, new HashSet<int> { 1, 2, 3 }.RandomOrDefault(v => v == 2, new NoDrawRandom()));
+            Assert.AreEqual(2, new[] { 1, 2, 3 }.RandomOrDefault(v => v == 2, new NoDrawRandom()));
+            Assert.IsNull(new List<string> { "a" }.RandomOrDefault(s => s.Length > 1, new NoDrawRandom()));
+        }
+
+        [Test]
+        public void RandomOrDefault_Predicate_RunsOncePerElement()
+        {
+            int calls = 0;
+            int picked = new List<int> { 1, 2, 3, 4 }.RandomOrDefault(v =>
+            {
+                calls++;
+                return v % 2 == 0;
+            }, new ScriptedRandom(0));
+
+            Assert.AreEqual(4, calls);
+            Assert.AreEqual(4, picked);
+        }
+
+        [Test]
+        public void RandomOrDefault_Predicate_Null_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+                ((IEnumerable<int>)null).RandomOrDefault(_ => true, new ScriptedRandom()));
+            Assert.Throws<ArgumentNullException>(() => new[] { 1 }.RandomOrDefault((Func<int, bool>)null, new ScriptedRandom()));
+            Assert.Throws<ArgumentNullException>(() => new[] { 1 }.RandomOrDefault(_ => true, null));
+        }
+
         #endregion
 
         #region SelfConcat
@@ -230,5 +313,99 @@ namespace Mane.DotNet.Tests
         }
 
         #endregion
+
+        private sealed class NoDrawRandom : IRandom
+        {
+            public int Seed => 0;
+            public int Next(int min, int max) => throw new InvalidOperationException();
+            public double Range01Double() => throw new InvalidOperationException();
+            public float Range01() => throw new InvalidOperationException();
+        }
+
+        private sealed class IndexOnlyReadOnlyList : IReadOnlyList<int>
+        {
+            private readonly int[] _items;
+            public int Enumerations { get; private set; }
+
+            public IndexOnlyReadOnlyList(params int[] items) => _items = items;
+
+            public int Count => _items.Length;
+            public int this[int index] => _items[index];
+
+            public IEnumerator<int> GetEnumerator()
+            {
+                Enumerations++;
+                yield break;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        private sealed class IndexOnlyList : IList<int>
+        {
+            private readonly int[] _items;
+            public int Enumerations { get; private set; }
+
+            public IndexOnlyList(params int[] items) => _items = items;
+
+            public int this[int index]
+            {
+                get => _items[index];
+                set => throw new NotSupportedException();
+            }
+
+            public int Count => _items.Length;
+            public bool IsReadOnly => true;
+
+            public IEnumerator<int> GetEnumerator()
+            {
+                Enumerations++;
+                yield break;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            public void Add(int item) => throw new NotSupportedException();
+            public void Clear() => throw new NotSupportedException();
+            public bool Contains(int item) => throw new NotSupportedException();
+            public void CopyTo(int[] array, int arrayIndex) { }
+            public int IndexOf(int item) => throw new NotSupportedException();
+            public void Insert(int index, int item) => throw new NotSupportedException();
+            public bool Remove(int item) => throw new NotSupportedException();
+            public void RemoveAt(int index) => throw new NotSupportedException();
+        }
+
+        private sealed class EmptyReadOnlyCollection : IReadOnlyCollection<int>
+        {
+            public int Enumerations { get; private set; }
+            public int Count => 0;
+
+            public IEnumerator<int> GetEnumerator()
+            {
+                Enumerations++;
+                yield break;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        private sealed class EmptyBag : ICollection<int>
+        {
+            public int Enumerations { get; private set; }
+            public int Count => 0;
+            public bool IsReadOnly => true;
+
+            public IEnumerator<int> GetEnumerator()
+            {
+                Enumerations++;
+                yield break;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            public void Add(int item) => throw new NotSupportedException();
+            public void Clear() => throw new NotSupportedException();
+            public bool Contains(int item) => false;
+            public void CopyTo(int[] array, int arrayIndex) { }
+            public bool Remove(int item) => throw new NotSupportedException();
+        }
     }
 }
