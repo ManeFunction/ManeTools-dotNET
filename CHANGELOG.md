@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `HistoryCache` serializes overlapping `Append`, `Clear`, and `GetAverage` calls on the same cache.
 - `GlobalEventManager.RaiseEvent` now also invokes listeners registered for base event types. Matching listeners run in subscription order.
 - Renamed constants library from Mane. to ManeConst. to eliminate conflicts with the namespace.
+- `ManeSingleton` no longer registers an object from its constructor. `Instance` stores the object only after its constructor has finished, so `SetInstance(new T(...))` can replace a live instance, and other threads never see a half-built one.
+
+### Fixed
+- A `ManeSingleton` constructor that threw left the half-built object as the instance for good. The constructor's own exception is now rethrown, not wrapped, and nothing is stored.
 - `TryParseToIntEnum` threw `ArgumentException` for enums whose underlying type is not `int` (`byte`, `short`, `long`). It now works for any underlying type and rejects values that only fit after wrapping.
 
 ## [2.0.0-preview.1] - 2026-08-18

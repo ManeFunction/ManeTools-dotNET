@@ -11,6 +11,7 @@ namespace Mane.DotNet.Tests
             AutoSingleton.ClearInstance();
             ManualSingleton.ClearInstance();
             NoCtorSingleton.ClearInstance();
+            ThrowingSingleton.ClearInstance();
         }
 
         [TearDown]
@@ -19,6 +20,7 @@ namespace Mane.DotNet.Tests
             AutoSingleton.ClearInstance();
             ManualSingleton.ClearInstance();
             NoCtorSingleton.ClearInstance();
+            ThrowingSingleton.ClearInstance();
         }
 
         [Test]
@@ -32,10 +34,9 @@ namespace Mane.DotNet.Tests
         }
 
         [Test]
-        public void SetInstance_ReplacesCurrent()
+        public void SetInstance_ReplacesLiveInstance()
         {
-            ManualSingleton created = new();
-            ManualSingleton.ClearInstance();
+            ManualSingleton created = ManualSingleton.Instance;
             ManualSingleton replacement = new();
             ManualSingleton.SetInstance(replacement);
             Assert.AreSame(replacement, ManualSingleton.Instance);
@@ -47,10 +48,17 @@ namespace Mane.DotNet.Tests
             Assert.Throws<ArgumentNullException>(() => ManualSingleton.SetInstance(null));
 
         [Test]
-        public void SecondConstructorCall_Throws()
+        public void Constructor_DoesNotRegister()
         {
             _ = new ManualSingleton();
-            Assert.Throws<InvalidOperationException>(() => _ = new ManualSingleton());
+            Assert.IsFalse(ManualSingleton.IsReady());
+        }
+
+        [Test]
+        public void Instance_ConstructorThrows_RethrowsAndStoresNothing()
+        {
+            Assert.Throws<FormatException>(() => _ = ThrowingSingleton.Instance);
+            Assert.IsFalse(ThrowingSingleton.IsReady());
         }
 
         [Test]
@@ -78,6 +86,11 @@ namespace Mane.DotNet.Tests
         private sealed class NoCtorSingleton : ManeSingleton<NoCtorSingleton>
         {
             public NoCtorSingleton(int unused) { }
+        }
+
+        private sealed class ThrowingSingleton : ManeSingleton<ThrowingSingleton>
+        {
+            private ThrowingSingleton() => throw new FormatException();
         }
     }
 }

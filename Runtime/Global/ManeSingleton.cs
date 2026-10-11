@@ -1,4 +1,6 @@
 using System;
+using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace Mane.DotNet
 {
@@ -24,8 +26,9 @@ namespace Mane.DotNet
 
                 lock (_lock)
                 {
+                    // Published only after the constructor has finished, so no thread sees a half-built object.
                     if (_instance == null)
-                        CreateInstance();
+                        _instance = CreateInstance();
 
                     return _instance;
                 }
@@ -59,35 +62,23 @@ namespace Mane.DotNet
                 _instance = null;
         }
 
-        /// <summary>
-        /// Registers this object as the singleton instance.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown when another instance is already registered.
-        /// </exception>
-        protected ManeSingleton()
-        {
-            lock (_lock)
-            {
-                if (_instance != null && !ReferenceEquals(_instance, this))
-                    throw new InvalidOperationException(
-                        $"{typeof(T).Name} singleton is already initialized.");
-
-                _instance = (T)this;
-            }
-        }
-
-        private static void CreateInstance()
+        private static T CreateInstance()
         {
             try
             {
-                Activator.CreateInstance(typeof(T), true);
+                return (T)Activator.CreateInstance(typeof(T), true);
             }
-            catch (MissingMethodException)
+            catch (MissingMethodException exception)
             {
                 throw new InvalidOperationException(
                     $"Failed to create {typeof(T).Name} singleton. " +
-                    "Provide a parameterless constructor or call SetInstance.");
+                    "Provide a parameterless constructor or call SetInstance.", exception);
+            }
+            catch (TargetInvocationException exception) when (exception.InnerException != null)
+            {
+                // Rethrow what the constructor threw, not the reflection wrapper.
+                ExceptionDispatchInfo.Capture(exception.InnerException).Throw();
+                throw;
             }
         }
     }
