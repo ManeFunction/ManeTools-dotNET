@@ -25,6 +25,18 @@ namespace Mane.DotNet.Tests
         }
 
         [Test]
+        public void SetInstance_WithInstance_KeepsSource()
+        {
+            GlobalRandom.SetInstance(new ScriptedRandom(4, 9));
+            IRandom saved = GlobalRandom.Instance;
+
+            GlobalRandom.SetInstance(new ScriptedRandom(1));
+            GlobalRandom.SetInstance(saved);
+
+            Assert.AreEqual(1, GlobalRandom.Instance.Next(0, 100));
+        }
+
+        [Test]
         public void SetInstance_ReplacesSource()
         {
             GlobalRandom.SetInstance(new ScriptedRandom(4, 9));

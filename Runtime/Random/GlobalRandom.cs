@@ -17,7 +17,8 @@ namespace Mane.DotNet
 
         /// <summary>
         /// The current source. Creates a <see cref="ManeRandom"/> if none has been set.
-        /// The same gate is returned every time. Overlapping draws on it are serialized.
+        /// Returns a gate that forwards to the stored source, not the source itself; the same gate
+        /// is returned every time. Overlapping draws on it are serialized.
         /// </summary>
         public static IRandom Instance
         {
@@ -34,12 +35,17 @@ namespace Mane.DotNet
         public static bool IsReady() => _source != null;
 
         /// <summary>
-        /// Replaces the stored source. Null throws.
+        /// Replaces the stored source. Null throws. Passing <see cref="Instance"/> back keeps the current
+        /// source, so a saved <see cref="Instance"/> can be restored safely.
         /// </summary>
         public static void SetInstance(IRandom instance)
         {
             if (instance == null)
                 throw new ArgumentNullException(nameof(instance));
+
+            // Storing the gate as its own source would make every draw recurse forever.
+            if (ReferenceEquals(instance, _gate))
+                return;
 
             lock (_lock)
                 _source = instance;
