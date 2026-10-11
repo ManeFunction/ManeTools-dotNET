@@ -53,10 +53,16 @@ namespace Mane.DotNet
         /// <returns>True if the string is a defined member of <typeparamref name="T"/>.</returns>
         public static bool TryParseToIntEnum<T>(this string value, out T result, T defaultValue = default) where T : struct, Enum
         {
-            if (int.TryParse(value, out int intValue) && Enum.IsDefined(typeof(T), intValue))
+            if (int.TryParse(value, out int intValue))
             {
-                result = (T)Enum.ToObject(typeof(T), intValue);
-                return true;
+                // IsDefined needs a value of the enum's underlying type, which is not always int.
+                // The round-trip check rejects ints that wrap into range, e.g. 257 for a byte enum.
+                object boxed = Enum.ToObject(typeof(T), intValue);
+                if (Enum.IsDefined(typeof(T), boxed) && Convert.ToDecimal(boxed) == intValue)
+                {
+                    result = (T)boxed;
+                    return true;
+                }
             }
             result = defaultValue;
             return false;

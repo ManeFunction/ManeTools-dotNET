@@ -14,6 +14,12 @@ namespace Mane.DotNet.Tests
             Blue = 3
         }
 
+        private enum Small : byte
+        {
+            One = 1,
+            Two = 2
+        }
+
         [Flags]
         private enum Bits
         {
@@ -59,6 +65,17 @@ namespace Mane.DotNet.Tests
             Assert.AreEqual(Color.Red, fallback);
 
             Assert.IsFalse("abc".TryParseToIntEnum(out Color _, Color.Green));
+        }
+
+        [Test]
+        public void TryParseToIntEnum_NonIntUnderlyingType()
+        {
+            Assert.IsTrue("2".TryParseToIntEnum(out Small two));
+            Assert.AreEqual(Small.Two, two);
+
+            // 257 wraps to 1 in a byte; it must not be accepted as One.
+            Assert.IsFalse("257".TryParseToIntEnum(out Small _));
+            Assert.IsFalse("-1".TryParseToIntEnum(out Small _));
         }
     }
 }

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `HistoryCache` serializes overlapping `Append`, `Clear`, and `GetAverage` calls on the same cache.
 - `GlobalEventManager.RaiseEvent` now also invokes listeners registered for base event types. Matching listeners run in subscription order.
 - Renamed constants library from Mane. to ManeConst. to eliminate conflicts with the namespace.
+- `TryParseToIntEnum` threw `ArgumentException` for enums whose underlying type is not `int` (`byte`, `short`, `long`). It now works for any underlying type and rejects values that only fit after wrapping.
 
 ## [2.0.0-preview.1] - 2026-08-18
 ### Added
