@@ -81,46 +81,20 @@ namespace Mane.DotNet
         /// <summary>
         /// Adds without wrapping. Overflow saturates to <see cref="int.MaxValue"/> or <see cref="int.MinValue"/>.
         /// </summary>
-        public static int SafePlus(this int value, int add)
-        {
-            try
-            {
-                return checked(value + add);
-            }
-            catch (OverflowException)
-            {
-                return add > 0 ? int.MaxValue : int.MinValue;
-            }
-        }
+        public static int SafePlus(this int value, int add) => Saturate((long)value + add);
         
         /// <summary>
         /// Subtracts without wrapping. Overflow saturates to <see cref="int.MaxValue"/> or <see cref="int.MinValue"/>.
         /// </summary>
-        public static int SafeMinus(this int value, int remove)
-        {
-            try
-            {
-                return checked(value - remove);
-            }
-            catch (OverflowException)
-            {
-                return remove > 0 ? int.MinValue : int.MaxValue;
-            }
-        }
+        public static int SafeMinus(this int value, int remove) => Saturate((long)value - remove);
         
         /// <summary>
         /// Multiplies without wrapping. Overflow saturates to <see cref="int.MaxValue"/> or <see cref="int.MinValue"/> by product sign.
         /// </summary>
-        public static int SafeMultiply(this int value, int multiplier)
-        {
-            try
-            {
-                return checked(value * multiplier);
-            }
-            catch (OverflowException)
-            {
-                return (value < 0) == (multiplier < 0) ? int.MaxValue : int.MinValue;
-            }
-        }
+        public static int SafeMultiply(this int value, int multiplier) => Saturate((long)value * multiplier);
+
+        // Any sum, difference or product of two ints fits in a long.
+        private static int Saturate(long value) =>
+            value > int.MaxValue ? int.MaxValue : value < int.MinValue ? int.MinValue : (int)value;
     }
 }
