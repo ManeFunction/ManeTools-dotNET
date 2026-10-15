@@ -101,25 +101,9 @@ namespace Mane.DotNet
             if (collection is IReadOnlyList<T> readOnlyList)
                 return readOnlyList.RandomOrDefaultWithIdx(out _, random);
 
-            if (collection is IList<T> list)
-            {
-                if (list.Count == 0)
-                    return default;
-
-                return list[random.Next(0, list.Count)];
-            }
-
-            if (collection is IReadOnlyCollection<T> readOnlyCollection)
-            {
-                int n = readOnlyCollection.Count;
+            // ElementAtOrDefault uses the indexer of an IList<T>.
+            if (TryGetCount(collection, out int n))
                 return n == 0 ? default : collection.ElementAtOrDefault(random.Next(0, n));
-            }
-
-            if (collection is ICollection<T> countable)
-            {
-                int n = countable.Count;
-                return n == 0 ? default : collection.ElementAtOrDefault(random.Next(0, n));
-            }
 
             T selected = default;
             int count = 0;
@@ -198,16 +182,8 @@ namespace Mane.DotNet
             }
 
             // Count is not a match index. It only lets an empty collection return before enumeration.
-            if (collection is IReadOnlyCollection<T> readOnlyCollection)
-            {
-                if (readOnlyCollection.Count == 0)
-                    return default;
-            }
-            else if (collection is ICollection<T> countable)
-            {
-                if (countable.Count == 0)
-                    return default;
-            }
+            if (TryGetCount(collection, out int size) && size == 0)
+                return default;
 
             foreach (T item in collection)
                 if (predicate(item))
@@ -274,18 +250,29 @@ namespace Mane.DotNet
             if (collection == null)
                 return true;
 
+            return TryGetCount(collection, out int count) ? count == 0 : !collection.Any();
+        }
+
+        // Count without enumerating, when the collection knows it.
+        private static bool TryGetCount<T>(IEnumerable<T> collection, out int count)
+        {
             switch (collection)
             {
                 case ICollection<T> c:
-                    return c.Count == 0;
+                    count = c.Count;
+                    return true;
                 case IReadOnlyCollection<T> c:
-                    return c.Count == 0;
+                    count = c.Count;
+                    return true;
                 case ICollection c:
-                    return c.Count == 0;
+                    count = c.Count;
+                    return true;
                 case string s:
-                    return s.Length == 0;
+                    count = s.Length;
+                    return true;
                 default:
-                    return !collection.Any();
+                    count = 0;
+                    return false;
             }
         }
     }
