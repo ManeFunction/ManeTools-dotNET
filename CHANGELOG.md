@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `HistoryCache` serializes overlapping `Append`, `Clear`, and `GetAverage` calls on the same cache.
 - `GlobalEventManager.RaiseEvent` now also invokes listeners registered for base event types. Matching listeners run in subscription order.
 - Renamed constants library from Mane. to ManeConst. to eliminate conflicts with the namespace.
+- `ToUpperFirst` was renamed to `ToFirstUpper`, which now takes an optional `CultureInfo` (the current culture when omitted), and `ToFirstUpperInvariant` was added, matching `ToUpper` and `ToUpperInvariant`. The old method always used the current culture, which in a Unity player is the player's OS locale: under Turkish, "item" became "İtem" even in an English UI. Use `ToFirstUpperInvariant` for text that must be the same on every machine. A first letter outside the Basic Multilingual Plane is now uppercased as one unit, where the runtime supports it (.NET does, Unity's Mono does not).
 - `ManeSingleton` no longer registers an object from its constructor. `Instance` stores the object only after its constructor has finished, so `SetInstance(new T(...))` can replace a live instance, and other threads never see a half-built one.
 
 ### Fixed

@@ -248,22 +248,61 @@ namespace Mane.DotNet.Tests
 
         #endregion
 
-        #region ToUpperFirst
+        #region ToFirstUpper
 
         [TestCase("hello", "Hello")]
         [TestCase("Hello", "Hello")]
         [TestCase("a", "A")]
         [TestCase("A", "A")]
         [TestCase("  hello", "  hello")]
-        public void ToUpperFirst_ChangesFirstLetter(string input, string expected) =>
-            Assert.AreEqual(expected, input.ToUpperFirst());
+        public void ToFirstUpper_ChangesFirstLetter(string input, string expected)
+        {
+            Assert.AreEqual(expected, input.ToFirstUpper(CultureInfo.InvariantCulture));
+            Assert.AreEqual(expected, input.ToFirstUpperInvariant());
+        }
 
         [TestCase(null)]
         [TestCase("")]
         [TestCase(" ")]
         [TestCase("\t")]
-        public void ToUpperFirst_NullOrWhiteSpace_ReturnsSame(string input) =>
-            Assert.AreEqual(input, input.ToUpperFirst());
+        public void ToFirstUpper_NullOrWhiteSpace_ReturnsSame(string input)
+        {
+            Assert.AreEqual(input, input.ToFirstUpper());
+            Assert.AreEqual(input, input.ToFirstUpperInvariant());
+        }
+
+        [Test]
+        public void ToFirstUpper_UsesGivenOrCurrentCulture()
+        {
+            CultureInfo turkish = new("tr-TR");
+            Assert.AreEqual("İtem", "item".ToFirstUpper(turkish));
+
+            CultureInfo previous = CultureInfo.CurrentCulture;
+            try
+            {
+                CultureInfo.CurrentCulture = turkish;
+                Assert.AreEqual("İtem", "item".ToFirstUpper());
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = previous;
+            }
+        }
+
+        [Test]
+        public void ToFirstUpperInvariant_IgnoresCurrentCulture()
+        {
+            CultureInfo previous = CultureInfo.CurrentCulture;
+            try
+            {
+                CultureInfo.CurrentCulture = new CultureInfo("tr-TR");
+                Assert.AreEqual("Item", "item".ToFirstUpperInvariant());
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = previous;
+            }
+        }
 
         #endregion
 

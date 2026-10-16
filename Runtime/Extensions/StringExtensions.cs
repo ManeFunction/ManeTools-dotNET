@@ -5,7 +5,7 @@ using System.Text;
 namespace Mane.DotNet
 {
     /// <summary>
-    /// Culture-invariant string helpers: number parsing, capitalization, and counted nouns.
+    /// String helpers: culture-invariant number parsing, capitalization, and counted nouns.
     /// </summary>
     public static class StringExtensions
     {
@@ -164,17 +164,29 @@ namespace Mane.DotNet
         }
         
         /// <summary>
-        /// Convert the first character of the string to uppercase
+        /// Converts the first character of the string to uppercase with the casing rules of
+        /// <paramref name="culture"/>, or of the current culture when it is null, like <see cref="string.ToUpper()"/>.
+        /// In a Unity player the current culture is the player's OS locale, not the game language: under Turkish,
+        /// "item" becomes "İtem". Use <see cref="ToFirstUpperInvariant"/> for text that must not depend on it.
         /// </summary>
-        public static string ToUpperFirst(this string str)
+        public static string ToFirstUpper(this string str, CultureInfo culture = null) =>
+            ToFirstUpper(str, (culture ?? CultureInfo.CurrentCulture).TextInfo);
+
+        /// <summary>
+        /// Converts the first character of the string to uppercase with the invariant culture's casing rules,
+        /// so the result is the same on every machine ("item" is always "Item").
+        /// </summary>
+        public static string ToFirstUpperInvariant(this string str) =>
+            ToFirstUpper(str, CultureInfo.InvariantCulture.TextInfo);
+
+        private static string ToFirstUpper(string str, TextInfo textInfo)
         {
             if (string.IsNullOrWhiteSpace(str))
                 return str;
-            
-            if (str.Length == 1)
-                return char.ToUpper(str[0]).ToString(); 
-            
-            return char.ToUpper(str[0]) + str[1..];
+
+            // A letter outside the Basic Multilingual Plane is a surrogate pair, uppercased as one unit.
+            int length = str.Length > 1 && char.IsSurrogatePair(str[0], str[1]) ? 2 : 1;
+            return textInfo.ToUpper(str[..length]) + str[length..];
         }
         
         /// <summary>
