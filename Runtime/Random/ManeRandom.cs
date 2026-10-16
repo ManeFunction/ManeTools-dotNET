@@ -6,7 +6,8 @@ namespace Mane.DotNet
     /// <summary>
     /// <see cref="IRandom"/> implementation backed by <see cref="Random"/>.
     /// The parameterless constructor seeds from a cryptographically strong source.
-    /// Overlapping <see cref="Next"/>, <see cref="Range01"/>, and <see cref="Range01Double"/> calls are serialized.
+    /// Overlapping <see cref="Next"/>, <see cref="Range01"/>, <see cref="Range01Inc"/>, and <see cref="Range01Double"/>
+    /// calls are serialized.
     /// </summary>
     public class ManeRandom : IRandom
     {
@@ -56,7 +57,20 @@ namespace Mane.DotNet
         public float Range01()
         {
             lock (_sync)
-                return (float)_random.NextDouble();
+                return ToRange01(_random.Next(FloatSteps));
         }
+
+        /// <inheritdoc />
+        public float Range01Inc()
+        {
+            lock (_sync)
+                return ToRange01(_random.Next(FloatSteps + 1));
+        }
+
+        // A float has 24 bits of precision: below 1 it holds every multiple of 2^-24 exactly. A cast from
+        // NextDouble rounds values just under 1 up to 1f.
+        internal const int FloatSteps = 1 << 24;
+
+        internal static float ToRange01(int step) => step * (1f / FloatSteps);
     }
 }

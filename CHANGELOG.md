@@ -10,10 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `IntHistoryCache`, a ring buffer of recent `int` values. `GetAverage` rounds the mean to the nearest `int`, with midpoints away from zero.
 - `GetCountedString(one, many)`, an English plural that uses `many` when the count is greater than 1.
 - `GlobalRandom`, a shared `IRandom` slot with the same `Instance` / `SetInstance` / `ClearInstance` lifecycle as `ManeSingleton`. The first access stores a `ManeRandom`. Calls through `Instance` are serialized.
+- `IRandom.Range01Inc` returns a float in `[0, 1]`, where 1 is a possible result too, next to `Range01` and its `[0, 1)`. `ManeRandom` and `GlobalRandom` implement it, and so does `UnityRandom` in ManeTools-Unity. A custom `IRandom` needs to add it.
 - `RandomOrDefault(predicate, random)` returns a uniformly chosen match, or default when nothing matches. Arrays and `List<T>` are scanned directly; other lists use the indexer. Other sequences use one-pass reservoir sampling. The predicate runs once per element.
 
 ### Changed
-- `ManeRandom` serializes overlapping `Next`, `Range01`, and `Range01Double` calls on the same instance to fix the `System.Random` thread-safety issue.
+- `ManeRandom` serializes overlapping `Next`, `Range01`, `Range01Inc`, and `Range01Double` calls on the same instance to fix the `System.Random` thread-safety issue.
 - `HistoryCache` serializes overlapping `Append`, `Clear`, and `GetAverage` calls on the same cache.
 - `GlobalEventManager.RaiseEvent` now also invokes listeners registered for base event types. Matching listeners run in subscription order.
 - Renamed constants library from Mane. to ManeConst. to eliminate conflicts with the namespace.
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Fixed
 - A `ManeSingleton` constructor that threw left the half-built object as the instance for good. The constructor's own exception is now rethrown, not wrapped, and nothing is stored.
 - `TryParseToIntEnum` threw `ArgumentException` for enums whose underlying type is not `int` (`byte`, `short`, `long`). It now works for any underlying type and rejects values that only fit after wrapping.
+- `ManeRandom.Range01` could return exactly `1f` (about 3 in 100 million calls), breaking its `[0, 1)` range, because a double just under 1 rounds up when cast to float. It now draws one of the 2^24 float steps below 1.
 
 ## [2.0.0-preview.1] - 2026-08-18
 ### Added

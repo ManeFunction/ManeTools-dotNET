@@ -44,6 +44,30 @@ namespace Mane.DotNet.Tests
         }
 
         [Test]
+        public void Range01_TopStepStaysBelowOne()
+        {
+            Assert.AreEqual(0f, ManeRandom.ToRange01(0));
+            Assert.Less(ManeRandom.ToRange01(ManeRandom.FloatSteps - 1), 1f);
+            Assert.AreEqual(1f - 1f / ManeRandom.FloatSteps, ManeRandom.ToRange01(ManeRandom.FloatSteps - 1));
+        }
+
+        [Test]
+        public void Range01Inc_TopStepIsOne() =>
+            Assert.AreEqual(1f, ManeRandom.ToRange01(ManeRandom.FloatSteps));
+
+        [Test]
+        public void Range01Inc_IsInClosedUnitInterval()
+        {
+            ManeRandom random = new(1);
+            for (int i = 0; i < 50; i++)
+            {
+                float f = random.Range01Inc();
+                Assert.GreaterOrEqual(f, 0f);
+                Assert.LessOrEqual(f, 1f);
+            }
+        }
+
+        [Test]
         public void ParameterlessConstructor_HasSeedAndWorks()
         {
             ManeRandom random = new();

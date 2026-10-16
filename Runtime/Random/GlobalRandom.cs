@@ -101,6 +101,12 @@ namespace Mane.DotNet
                     return Source.Range01();
             }
 
+            public float Range01Inc()
+            {
+                lock (_lock)
+                    return Source.Range01Inc();
+            }
+
             private static IRandom Source
             {
                 get

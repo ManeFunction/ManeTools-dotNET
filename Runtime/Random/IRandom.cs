@@ -28,5 +28,10 @@ namespace Mane.DotNet
         /// Returns a random float in the range [0, 1).
         /// </summary>
         float Range01();
+
+        /// <summary>
+        /// Returns a random float in the range [0, 1], where 1 can be returned too.
+        /// </summary>
+        float Range01Inc();
     }
 }

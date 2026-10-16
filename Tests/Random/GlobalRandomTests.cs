@@ -46,6 +46,7 @@ namespace Mane.DotNet.Tests
             Assert.AreEqual(9, GlobalRandom.Instance.Next(0, 100));
             Assert.AreEqual(1, GlobalRandom.Instance.Next(1, 5));
             Assert.AreEqual(0f, GlobalRandom.Instance.Range01());
+            Assert.AreEqual(1f, GlobalRandom.Instance.Range01Inc());
             Assert.AreEqual(0d, GlobalRandom.Instance.Range01Double());
         }
 

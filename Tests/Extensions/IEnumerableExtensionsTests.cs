@@ -320,6 +320,7 @@ namespace Mane.DotNet.Tests
             public int Next(int min, int max) => throw new InvalidOperationException();
             public double Range01Double() => throw new InvalidOperationException();
             public float Range01() => throw new InvalidOperationException();
+            public float Range01Inc() => throw new InvalidOperationException();
         }
 
         private sealed class IndexOnlyReadOnlyList : IReadOnlyList<int>

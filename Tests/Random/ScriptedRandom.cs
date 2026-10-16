@@ -28,5 +28,7 @@ namespace Mane.DotNet.Tests
         public double Range01Double() => 0d;
 
         public float Range01() => 0f;
+
+        public float Range01Inc() => 1f;
     }
 }
