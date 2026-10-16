@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Fixed
 - A `ManeSingleton` constructor that threw left the half-built object as the instance for good. The constructor's own exception is now rethrown, not wrapped, and nothing is stored.
 - `TryParseToIntEnum` threw `ArgumentException` for enums whose underlying type is not `int` (`byte`, `short`, `long`). It now works for any underlying type and rejects values that only fit after wrapping.
+- The Slavic `GetCountedString(one, many, more)` returned `more` for every negative count, although its docs say the sign is ignored. -21 now gives `one` and -2 gives `many`, like 21 and 2.
 - `MinMaxFloat` and `MinMaxDouble` misbehaved as dictionary or set keys: `Equals` used a tolerance while the hash used a grid, so two intervals that compared equal could hash differently and a lookup could miss. `Equals` and `GetHashCode` are now exact on the normalized bounds; `==` and `!=` still compare within the tolerance, like Unity's `Vector3`.
 - `ManeRandom.Range01` could return exactly `1f` (about 3 in 100 million calls), breaking its `[0, 1)` range, because a double just under 1 rounds up when cast to float. It now draws one of the 2^24 float steps below 1.
 

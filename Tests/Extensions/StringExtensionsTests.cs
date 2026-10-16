@@ -274,6 +274,8 @@ namespace Mane.DotNet.Tests
         [TestCase(31)]
         [TestCase(101)]
         [TestCase(121)]
+        [TestCase(-1)]
+        [TestCase(-21)]
         public void GetCountedString_One(int count) =>
             Assert.AreEqual("one", count.GetCountedString("one", "many", "more"));
 
@@ -283,6 +285,8 @@ namespace Mane.DotNet.Tests
         [TestCase(22)]
         [TestCase(24)]
         [TestCase(102)]
+        [TestCase(-2)]
+        [TestCase(-24)]
         public void GetCountedString_Many(int count) =>
             Assert.AreEqual("many", count.GetCountedString("one", "many", "more"));
 
@@ -297,6 +301,9 @@ namespace Mane.DotNet.Tests
         [TestCase(20)]
         [TestCase(25)]
         [TestCase(111)]
+        [TestCase(-5)]
+        [TestCase(-11)]
+        [TestCase(int.MinValue)]
         public void GetCountedString_More(int count) =>
             Assert.AreEqual("more", count.GetCountedString("one", "many", "more"));
 

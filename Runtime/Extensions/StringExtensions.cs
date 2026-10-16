@@ -181,7 +181,7 @@ namespace Mane.DotNet
         /// Slavic-style plural form: 1 → <paramref name="one"/>, 2–4 → <paramref name="many"/>,
         /// 5+ and teens 11–19 → <paramref name="more"/>.
         /// </summary>
-        /// <param name="count">Count used to pick the form. The sign is ignored via modulo.</param>
+        /// <param name="count">Count used to pick the form. The sign is ignored: -21 uses the same form as 21.</param>
         /// <param name="one">Form for 1, 21, 31, …</param>
         /// <param name="many">Form for 2–4, 22–24, …</param>
         /// <param name="more">Form for 0, 5–20, 25–30, …</param>
@@ -194,11 +194,12 @@ namespace Mane.DotNet
             if (more == null)
                 throw new ArgumentNullException(nameof(more));
 
-            int tens = count % 100;
+            // Abs of the remainder, not of the count: Math.Abs(int.MinValue) overflows.
+            int tens = Math.Abs(count % 100);
             if (tens is > 5 and < 20)
                 return more;
-            
-            int units = count % 10;
+
+            int units = Math.Abs(count % 10);
             if (units == 1)
                 return one;
             
