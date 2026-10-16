@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,6 +81,23 @@ namespace Mane.DotNet.Tests
             Task task = AsyncTools.CreateTask(_ => { }, cts.Token);
             cts.Cancel();
             CompleteOrThrow<OperationCanceledException>(task);
+        }
+
+        [Test]
+        public void CreateTask_AlreadyCanceled_DoesNotStart()
+        {
+            using CancellationTokenSource cts = new();
+            cts.Cancel();
+            bool started = false;
+            bool startedT = false;
+
+            Task task = AsyncTools.CreateTask(_ => started = true, cts.Token);
+            Task<int> taskT = AsyncTools.CreateTask<int>(_ => startedT = true, cts.Token);
+
+            Assert.IsFalse(started);
+            Assert.IsFalse(startedT);
+            Assert.IsTrue(task.IsCanceled);
+            Assert.IsTrue(taskT.IsCanceled);
         }
 
         [Test]
@@ -187,6 +206,37 @@ namespace Mane.DotNet.Tests
         }
 
         [Test]
+        public void OnComplete_CallbackThrows_RaisesOnContext()
+        {
+            Exception raised = null;
+            Exception raisedT = null;
+            RunOnThreadPool(() =>
+            {
+                ManualContext context = new();
+                SynchronizationContext previous = SynchronizationContext.Current;
+                SynchronizationContext.SetSynchronizationContext(context);
+                try
+                {
+                    Task.CompletedTask.OnComplete(_ => throw new InvalidOperationException("x"));
+                    raised = context.RunUntilThrows(HangTimeoutMs);
+                    Task.FromResult(1).OnComplete((_, __) => throw new InvalidOperationException("y"));
+                    raisedT = context.RunUntilThrows(HangTimeoutMs);
+                }
+                finally
+                {
+                    SynchronizationContext.SetSynchronizationContext(previous);
+                }
+
+                return Task.CompletedTask;
+            });
+
+            Assert.IsInstanceOf<InvalidOperationException>(raised);
+            Assert.AreEqual("x", raised.Message);
+            Assert.IsInstanceOf<InvalidOperationException>(raisedT);
+            Assert.AreEqual("y", raisedT.Message);
+        }
+
+        [Test]
         public void OnComplete_Null_Throws()
         {
             Assert.Throws<ArgumentNullException>(() => ((Task)null).OnComplete(_ => { }));
@@ -238,6 +288,38 @@ namespace Mane.DotNet.Tests
             catch (AggregateException)
             {
                 return true;
+            }
+        }
+
+        /// <summary>
+        /// Context that queues posted work until the test runs it, like Unity's main-thread context.
+        /// </summary>
+        private sealed class ManualContext : SynchronizationContext
+        {
+            private readonly BlockingCollection<(SendOrPostCallback, object)> _queue = new();
+
+            public override void Post(SendOrPostCallback d, object state) => _queue.Add((d, state));
+
+            // Runs posted work on this thread and returns the first exception it throws, or null on timeout.
+            public Exception RunUntilThrows(int timeoutMs)
+            {
+                Stopwatch stopwatch = Stopwatch.StartNew();
+                while (stopwatch.ElapsedMilliseconds < timeoutMs)
+                {
+                    if (!_queue.TryTake(out (SendOrPostCallback callback, object state) item, 10))
+                        continue;
+
+                    try
+                    {
+                        item.callback(item.state);
+                    }
+                    catch (Exception exception)
+                    {
+                        return exception;
+                    }
+                }
+
+                return null;
             }
         }
 

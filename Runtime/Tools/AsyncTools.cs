@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -58,13 +59,16 @@ namespace Mane.DotNet
 
         /// <summary>
         /// Starts a callback-based operation and returns a task that completes when the callback is invoked.
-        /// Token cancel reports as <see cref="OperationCanceledException"/>.
+        /// Token cancel reports as <see cref="OperationCanceledException"/>; with a token that is already
+        /// canceled, the operation is not started.
         /// </summary>
         public static Task CreateTask(Action<Action> targetMethod,
             CancellationToken cancellationToken = default)
         {
             if (targetMethod == null)
                 throw new ArgumentNullException(nameof(targetMethod));
+            if (cancellationToken.IsCancellationRequested)
+                return Task.FromCanceled(cancellationToken);
 
             CallbackWait<bool> wait = new CallbackWait<bool>(cancellationToken);
             try
@@ -81,13 +85,16 @@ namespace Mane.DotNet
 
         /// <summary>
         /// Starts a callback-based operation and returns a task that completes when the callback is invoked with a result.
-        /// Token cancel reports as <see cref="OperationCanceledException"/>.
+        /// Token cancel reports as <see cref="OperationCanceledException"/>; with a token that is already
+        /// canceled, the operation is not started.
         /// </summary>
         public static Task<T> CreateTask<T>(Action<Action<T>> targetMethod,
             CancellationToken cancellationToken = default)
         {
             if (targetMethod == null)
                 throw new ArgumentNullException(nameof(targetMethod));
+            if (cancellationToken.IsCancellationRequested)
+                return Task.FromCanceled<T>(cancellationToken);
 
             CallbackWait<T> wait = new CallbackWait<T>(cancellationToken);
             try
@@ -106,6 +113,8 @@ namespace Mane.DotNet
         /// Invokes <paramref name="callback"/> when the task ends. Does not wait.
         /// Runs on the current synchronization context when one exists (Unity main thread).
         /// <paramref name="cancellationToken"/> cancels this wait only, not the task.
+        /// An exception thrown by <paramref name="callback"/> is raised like one from an <c>async void</c> method:
+        /// on that synchronization context (Unity logs it to the Console), otherwise on the thread pool.
         /// </summary>
         /// <param name="task">The task to observe.</param>
         /// <param name="cancellationToken">The cancellation token to cancel this wait only.</param>
@@ -129,6 +138,8 @@ namespace Mane.DotNet
         /// Invokes <paramref name="callback"/> when the task ends. Does not wait.
         /// Runs on the current synchronization context when one exists (Unity main thread).
         /// <paramref name="cancellationToken"/> cancels this wait only, not the task.
+        /// An exception thrown by <paramref name="callback"/> is raised like one from an <c>async void</c> method:
+        /// on that synchronization context (Unity logs it to the Console), otherwise on the thread pool.
         /// </summary>
         /// <param name="task">The task to observe.</param>
         /// <param name="cancellationToken">The cancellation token to cancel this wait only.</param>
@@ -185,12 +196,9 @@ namespace Mane.DotNet
                 t =>
                 {
                     if (t.Status == TaskStatus.RanToCompletion)
-                    {
-                        onSuccess(t);
-                        return;
-                    }
-
-                    onUnsuccessful(ErrorFrom(t));
+                        Invoke(() => onSuccess(t));
+                    else
+                        Invoke(() => onUnsuccessful(ErrorFrom(t)));
                 },
                 cancellationToken,
                 TaskContinuationOptions.ExecuteSynchronously,
@@ -199,7 +207,7 @@ namespace Mane.DotNet
             continuation.ContinueWith(
                 canceled =>
                 {
-                    onUnsuccessful(new OperationCanceledException(cancellationToken));
+                    Invoke(() => onUnsuccessful(new OperationCanceledException(cancellationToken)));
                     task.ContinueWith(
                         t =>
                         {
@@ -210,6 +218,25 @@ namespace Mane.DotNet
                 CancellationToken.None,
                 TaskContinuationOptions.OnlyOnCanceled | TaskContinuationOptions.ExecuteSynchronously,
                 CurrentScheduler());
+        }
+
+        // A continuation would keep the callback's exception in its own task, which nobody observes.
+        // Raise it the way an async void method does instead, so it reaches the Console or crash handler.
+        private static void Invoke(Action callback)
+        {
+            try
+            {
+                callback();
+            }
+            catch (Exception exception)
+            {
+                ExceptionDispatchInfo error = ExceptionDispatchInfo.Capture(exception);
+                SynchronizationContext context = SynchronizationContext.Current;
+                if (context != null)
+                    context.Post(_ => error.Throw(), null);
+                else
+                    ThreadPool.QueueUserWorkItem(_ => error.Throw());
+            }
         }
 
         private static Exception ErrorFrom(Task task)
