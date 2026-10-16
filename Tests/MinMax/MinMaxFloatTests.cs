@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace Mane.DotNet.Tests
@@ -35,7 +36,7 @@ namespace Mane.DotNet.Tests
         }
 
         [Test]
-        public void Equality_UsesToleranceAndNormalizes()
+        public void Operator_UsesToleranceAndNormalizes()
         {
             MinMaxFloat a = new(1f, 5f);
             MinMaxFloat flipped = new(5f, 1f);
@@ -44,9 +45,28 @@ namespace Mane.DotNet.Tests
             Assert.IsTrue(a == flipped);
             Assert.IsTrue(a == close);
             Assert.IsTrue(a != new MinMaxFloat(1f, 6f));
-            Assert.AreEqual(a.GetHashCode(), flipped.GetHashCode());
-            Assert.AreEqual(a.GetHashCode(), close.GetHashCode());
             Assert.AreEqual("[1, 5]", flipped.ToString());
+        }
+
+        [Test]
+        public void Equals_IsExactAndNormalizes()
+        {
+            MinMaxFloat a = new(1f, 5f);
+            MinMaxFloat flipped = new(5f, 1f);
+            MinMaxFloat close = new(1f + 1e-7f, 5f);
+
+            Assert.IsTrue(a.Equals(flipped));
+            Assert.AreEqual(a.GetHashCode(), flipped.GetHashCode());
+            Assert.IsFalse(a.Equals(close));
+        }
+
+        [Test]
+        public void HashSet_FindsEqualKey()
+        {
+            HashSet<MinMaxFloat> set = new() { new MinMaxFloat(1f, 5f) };
+
+            Assert.IsTrue(set.Contains(new MinMaxFloat(5f, 1f)));
+            Assert.IsFalse(set.Contains(new MinMaxFloat(1f + 1e-7f, 5f)));
         }
     }
 }

@@ -5,7 +5,8 @@ namespace Mane.DotNet
     /// <summary>
     /// Inclusive float interval. <see cref="A"/> and <see cref="B"/> are unordered endpoints;
     /// <see cref="Min"/> and <see cref="Max"/> always return the numeric bounds.
-    /// Equality uses <see cref="ManeConst.FloatTolerance"/>.
+    /// <c>==</c> compares within <see cref="ManeConst.FloatTolerance"/>; <see cref="Equals(MinMaxFloat)"/> and
+    /// <see cref="GetHashCode"/> are exact, so the type works as a dictionary key (like Unity's <c>Vector3</c>).
     /// </summary>
     [Serializable]
     public struct MinMaxFloat : IEquatable<MinMaxFloat>
@@ -69,13 +70,16 @@ namespace Mane.DotNet
 
         /// <summary>
         /// Returns true if the normalized bounds are equal within <see cref="ManeConst.FloatTolerance"/>.
+        /// Unlike <see cref="Equals(MinMaxFloat)"/>, this is not exact.
         /// </summary>
-        public static bool operator ==(MinMaxFloat a, MinMaxFloat b) => a.Equals(b);
+        public static bool operator ==(MinMaxFloat a, MinMaxFloat b) =>
+            Math.Abs(a.Min - b.Min) < ManeConst.FloatTolerance &&
+            Math.Abs(a.Max - b.Max) < ManeConst.FloatTolerance;
 
         /// <summary>
         /// Returns true if the normalized bounds differ by more than <see cref="ManeConst.FloatTolerance"/>.
         /// </summary>
-        public static bool operator !=(MinMaxFloat a, MinMaxFloat b) => !a.Equals(b);
+        public static bool operator !=(MinMaxFloat a, MinMaxFloat b) => !(a == b);
 
         /// <summary>
         /// Returns true if <paramref name="value"/> lies inside the interval.
@@ -92,39 +96,19 @@ namespace Mane.DotNet
         public readonly float Clamp(float value) => Math.Clamp(value, Min, Max);
 
         /// <summary>
-        /// Compares normalized bounds within <see cref="ManeConst.FloatTolerance"/>, so (1, 5) equals (5, 1).
+        /// Compares normalized bounds exactly, so (1, 5) equals (5, 1). Dictionaries and sets use this;
+        /// use <c>==</c> for a comparison within <see cref="ManeConst.FloatTolerance"/>.
         /// </summary>
-        public readonly bool Equals(MinMaxFloat other) =>
-            Math.Abs(Min - other.Min) < ManeConst.FloatTolerance &&
-            Math.Abs(Max - other.Max) < ManeConst.FloatTolerance;
+        public readonly bool Equals(MinMaxFloat other) => Min.Equals(other.Min) && Max.Equals(other.Max);
 
         /// <inheritdoc />
         public readonly override bool Equals(object obj) => obj is MinMaxFloat other && Equals(other);
 
         /// <summary>
-        /// Hashes normalized bounds snapped to <see cref="ManeConst.FloatTolerance"/>,
-        /// so values that compare equal share a hash except on bucket edges.
+        /// Hashes the normalized bounds, consistent with <see cref="Equals(MinMaxFloat)"/>.
         /// </summary>
         public readonly override int GetHashCode() =>
-            unchecked(Snap(Min).GetHashCode() * 397 ^ Snap(Max).GetHashCode());
-
-        private static long Snap(float value)
-        {
-            if (float.IsNaN(value))
-                return 0;
-            if (float.IsPositiveInfinity(value))
-                return long.MaxValue;
-            if (float.IsNegativeInfinity(value))
-                return long.MinValue;
-
-            double scaled = value / ManeConst.FloatTolerance;
-            if (double.IsPositiveInfinity(scaled) || scaled >= long.MaxValue)
-                return long.MaxValue;
-            if (double.IsNegativeInfinity(scaled) || scaled <= long.MinValue)
-                return long.MinValue;
-
-            return (long)Math.Round(scaled, MidpointRounding.AwayFromZero);
-        }
+            unchecked(Min.GetHashCode() * 397 ^ Max.GetHashCode());
 
         /// <summary>
         /// Returns the interval as <c>[Min, Max]</c>.

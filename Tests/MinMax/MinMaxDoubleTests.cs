@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace Mane.DotNet.Tests
@@ -35,7 +36,7 @@ namespace Mane.DotNet.Tests
         }
 
         [Test]
-        public void Equality_UsesToleranceAndNormalizes()
+        public void Operator_UsesToleranceAndNormalizes()
         {
             MinMaxDouble a = new(1d, 5d);
             MinMaxDouble flipped = new(5d, 1d);
@@ -44,9 +45,28 @@ namespace Mane.DotNet.Tests
             Assert.IsTrue(a == flipped);
             Assert.IsTrue(a == close);
             Assert.IsTrue(a != new MinMaxDouble(1d, 6d));
-            Assert.AreEqual(a.GetHashCode(), flipped.GetHashCode());
-            Assert.AreEqual(a.GetHashCode(), close.GetHashCode());
             Assert.AreEqual("[1, 5]", flipped.ToString());
+        }
+
+        [Test]
+        public void Equals_IsExactAndNormalizes()
+        {
+            MinMaxDouble a = new(1d, 5d);
+            MinMaxDouble flipped = new(5d, 1d);
+            MinMaxDouble close = new(1d + 1e-13d, 5d);
+
+            Assert.IsTrue(a.Equals(flipped));
+            Assert.AreEqual(a.GetHashCode(), flipped.GetHashCode());
+            Assert.IsFalse(a.Equals(close));
+        }
+
+        [Test]
+        public void HashSet_FindsEqualKey()
+        {
+            HashSet<MinMaxDouble> set = new() { new MinMaxDouble(1d, 5d) };
+
+            Assert.IsTrue(set.Contains(new MinMaxDouble(5d, 1d)));
+            Assert.IsFalse(set.Contains(new MinMaxDouble(1d + 1e-13d, 5d)));
         }
     }
 }

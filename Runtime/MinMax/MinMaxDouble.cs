@@ -5,7 +5,8 @@ namespace Mane.DotNet
     /// <summary>
     /// Inclusive double interval. <see cref="A"/> and <see cref="B"/> are unordered endpoints;
     /// <see cref="Min"/> and <see cref="Max"/> always return the numeric bounds.
-    /// Equality uses <see cref="ManeConst.DoubleTolerance"/>.
+    /// <c>==</c> compares within <see cref="ManeConst.DoubleTolerance"/>; <see cref="Equals(MinMaxDouble)"/> and
+    /// <see cref="GetHashCode"/> are exact, so the type works as a dictionary key (like Unity's <c>Vector3</c>).
     /// </summary>
     [Serializable]
     public struct MinMaxDouble : IEquatable<MinMaxDouble>
@@ -69,13 +70,16 @@ namespace Mane.DotNet
 
         /// <summary>
         /// Returns true if the normalized bounds are equal within <see cref="ManeConst.DoubleTolerance"/>.
+        /// Unlike <see cref="Equals(MinMaxDouble)"/>, this is not exact.
         /// </summary>
-        public static bool operator ==(MinMaxDouble a, MinMaxDouble b) => a.Equals(b);
+        public static bool operator ==(MinMaxDouble a, MinMaxDouble b) =>
+            Math.Abs(a.Min - b.Min) < ManeConst.DoubleTolerance &&
+            Math.Abs(a.Max - b.Max) < ManeConst.DoubleTolerance;
 
         /// <summary>
         /// Returns true if the normalized bounds differ by more than <see cref="ManeConst.DoubleTolerance"/>.
         /// </summary>
-        public static bool operator !=(MinMaxDouble a, MinMaxDouble b) => !a.Equals(b);
+        public static bool operator !=(MinMaxDouble a, MinMaxDouble b) => !(a == b);
 
         /// <summary>
         /// Returns true if <paramref name="value"/> lies inside the interval.
@@ -92,39 +96,19 @@ namespace Mane.DotNet
         public readonly double Clamp(double value) => Math.Clamp(value, Min, Max);
 
         /// <summary>
-        /// Compares normalized bounds within <see cref="ManeConst.DoubleTolerance"/>, so (1, 5) equals (5, 1).
+        /// Compares normalized bounds exactly, so (1, 5) equals (5, 1). Dictionaries and sets use this;
+        /// use <c>==</c> for a comparison within <see cref="ManeConst.DoubleTolerance"/>.
         /// </summary>
-        public readonly bool Equals(MinMaxDouble other) =>
-            Math.Abs(Min - other.Min) < ManeConst.DoubleTolerance &&
-            Math.Abs(Max - other.Max) < ManeConst.DoubleTolerance;
+        public readonly bool Equals(MinMaxDouble other) => Min.Equals(other.Min) && Max.Equals(other.Max);
 
         /// <inheritdoc />
         public readonly override bool Equals(object obj) => obj is MinMaxDouble other && Equals(other);
 
         /// <summary>
-        /// Hashes normalized bounds snapped to <see cref="ManeConst.DoubleTolerance"/>,
-        /// so values that compare equal share a hash except on bucket edges.
+        /// Hashes the normalized bounds, consistent with <see cref="Equals(MinMaxDouble)"/>.
         /// </summary>
         public readonly override int GetHashCode() =>
-            unchecked(Snap(Min).GetHashCode() * 397 ^ Snap(Max).GetHashCode());
-
-        private static long Snap(double value)
-        {
-            if (double.IsNaN(value))
-                return 0;
-            if (double.IsPositiveInfinity(value))
-                return long.MaxValue;
-            if (double.IsNegativeInfinity(value))
-                return long.MinValue;
-
-            double scaled = value / ManeConst.DoubleTolerance;
-            if (double.IsPositiveInfinity(scaled) || scaled >= long.MaxValue)
-                return long.MaxValue;
-            if (double.IsNegativeInfinity(scaled) || scaled <= long.MinValue)
-                return long.MinValue;
-
-            return (long)Math.Round(scaled, MidpointRounding.AwayFromZero);
-        }
+            unchecked(Min.GetHashCode() * 397 ^ Max.GetHashCode());
 
         /// <summary>
         /// Returns the interval as <c>[Min, Max]</c>.
