@@ -5,7 +5,7 @@ Tools and extensions for built-in .NET types, with no Unity engine dependencies.
 ## Features
 
 - **ManeSingleton** - thread-safe singleton with explicit `SetInstance` / `ClearInstance`
-- **GlobalEventManager** - in-process event bus keyed by concrete event type
+- **GlobalEventManager** - in-process event bus keyed by event type: raising an event also notifies listeners of its base types, in subscription order
 - **MinMaxInt / MinMaxFloat / MinMaxDouble** - unordered numeric intervals, with clamp and contains
 - **IRandom / ManeRandom / GlobalRandom** - seeded thread-safe random source, a shared `IRandom` slot, plus dice and coin helpers
 - **AsyncTools** - poll a condition, wrap callbacks as tasks, observe completion with `OnComplete`
