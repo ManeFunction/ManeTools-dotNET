@@ -28,10 +28,14 @@ namespace Mane.DotNet
             ParseIntegerInvariant(str, defaultValue, ushort.TryParse, ushort.MinValue, ushort.MaxValue, v => (ushort)v);
 
         /// <summary>
-        /// Parses the string ignoring the current culture. Trims whitespace and apostrophes.
-        /// The last <c>.</c> or <c>,</c> is the decimal separator; extra marks of the same kind are thousands separators.
-        /// Integers also accept a whole number written with a decimal part of zeros (for example <c>1.000</c>).
-        /// Returns <paramref name="defaultValue"/> when the string is null, empty, or not a valid number.
+        /// Parses the string ignoring the current culture. Whitespace and apostrophes are removed anywhere in the string,
+        /// so they work as thousands separators (<c>1 234</c>, <c>1'234</c>).
+        /// When both <c>.</c> and <c>,</c> appear, the last mark is the decimal separator and every other mark is a
+        /// thousands separator (<c>1,234.5</c>, <c>1.234,5</c>). When only one kind appears, it is the decimal separator
+        /// if it occurs once and a thousands separator if it repeats (<c>1.234.567</c>).
+        /// Integers also accept a whole number written with a decimal part of zeros, so <c>1.000</c> is 1, not 1000.
+        /// Returns <paramref name="defaultValue"/> when the string is null, empty, not a valid number, out of range,
+        /// or has a non-zero decimal part.
         /// </summary>
         public static int ParseIntInvariant(this string str, int defaultValue = 0) =>
             ParseIntegerInvariant(str, defaultValue, int.TryParse, int.MinValue, int.MaxValue, v => (int)v);
@@ -49,8 +53,11 @@ namespace Mane.DotNet
             ParseIntegerInvariant(str, defaultValue, ulong.TryParse, ulong.MinValue, ulong.MaxValue, v => (ulong)v);
 
         /// <summary>
-        /// Parses the string ignoring the current culture. Trims whitespace and apostrophes.
-        /// The last <c>.</c> or <c>,</c> is the decimal separator; extra marks of the same kind are thousands separators.
+        /// Parses the string ignoring the current culture. Whitespace and apostrophes are removed anywhere in the string,
+        /// so they work as thousands separators (<c>1 234.5</c>, <c>1'234.5</c>).
+        /// When both <c>.</c> and <c>,</c> appear, the last mark is the decimal separator and every other mark is a
+        /// thousands separator (<c>1,234.5</c>, <c>1.234,5</c>). When only one kind appears, it is the decimal separator
+        /// if it occurs once and a thousands separator if it repeats (<c>1.234.567</c>).
         /// Returns <paramref name="defaultValue"/> when the string is null, empty, or not a valid number.
         /// </summary>
         public static float ParseFloatInvariant(this string str, float defaultValue = 0f) =>
