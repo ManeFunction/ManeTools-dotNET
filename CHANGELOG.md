@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [2.0.0-preview.2] - 2026-10-27
 ### Added
 - `IntHistoryCache`, a ring buffer of recent `int` values. `GetAverage` rounds the mean to the nearest `int`, with midpoints away from zero.
 - `GetCountedString(one, many)`, an English plural that uses `many` when the count is greater than 1.
