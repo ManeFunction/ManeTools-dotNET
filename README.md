@@ -2,6 +2,14 @@
 
 Tools and extensions for built-in .NET types, with no Unity engine dependencies. Useful for domain-driven design and for separating core logic code from Unity-dependent.
 
+The package is supported from **Unity 6.0.81** (6000.0.81f1). It is the base of the other Mane Tools packages. More information is in [Dependencies](#dependencies) section.
+
+- [Features](#features)
+- [Dependencies](#dependencies)
+- [Installation](#installation)
+- [Why Preview?](#why-preview)
+- [Repository info](#repository-info)
+
 ## Features
 
 - **ManeSingleton** - thread-safe singleton with explicit `SetInstance` / `ClearInstance`
@@ -20,6 +28,12 @@ Tools and extensions for built-in .NET types, with no Unity engine dependencies.
 - Almost all public API methods are covered with `NUnit` tests.
 
 For detailed info and usage examples of everything in this package, welcome to [projects Wiki](https://github.com/ManeFunction/ManeTools-dotNET/wiki)!
+
+## Dependencies
+
+![](https://raw.githubusercontent.com/wiki/ManeFunction/ManeTools-dotNET/Images/dependencies.png)
+
+- This package has extensions that designed to work with Unity: [ManeTools-Unity](https://github.com/ManeFunction/ManeTools-Unity.git) and [ManeTools-UnityUI](https://github.com/ManeFunction/ManeTools-UnityUI.git).
 
 ## Installation
 
